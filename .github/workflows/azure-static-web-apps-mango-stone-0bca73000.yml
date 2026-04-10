@@ -35,7 +35,7 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_GROUND_0BE296600 }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_STONE_0BCA73000 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: /
@@ -51,6 +51,6 @@ jobs:
       - name: Close Pull Request Preview
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_GROUND_0BE296600 }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_MANGO_STONE_0BCA73000 }}
           action: close
           app_location: /
