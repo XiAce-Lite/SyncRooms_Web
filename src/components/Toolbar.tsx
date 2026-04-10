@@ -9,6 +9,10 @@ interface ToolbarProps {
   onRefreshIntervalChange: (value: RefreshIntervalOption) => void;
   onManualRefresh: () => void;
   onEnableNotifications: () => void;
+  notifyOnEnter: boolean;
+  notifyOnExit: boolean;
+  onToggleNotifyOnEnter: () => void;
+  onToggleNotifyOnExit: () => void;
   notificationSupported: boolean;
   notificationPermission: NotificationPermission | 'unsupported';
   isRefreshing: boolean;
@@ -26,6 +30,10 @@ export function Toolbar({
   onRefreshIntervalChange,
   onManualRefresh,
   onEnableNotifications,
+  notifyOnEnter,
+  notifyOnExit,
+  onToggleNotifyOnEnter,
+  onToggleNotifyOnExit,
   notificationSupported,
   notificationPermission,
   isRefreshing,
@@ -99,7 +107,7 @@ export function Toolbar({
           <label className="field-label" htmlFor="refreshInterval">
             自動更新
           </label>
-          <div className="toolbar-actions">
+          <div className="toolbar-actions toolbar-refresh-row">
             <select
               id="refreshInterval"
               value={String(refreshInterval)}
@@ -119,12 +127,28 @@ export function Toolbar({
             <button className="btn btn-primary" onClick={onManualRefresh} disabled={isRefreshing}>
               {isRefreshing ? '更新中…' : '手動更新'}
             </button>
+          </div>
+          <div className="toolbar-actions toolbar-notify-row">
             <button
               className="btn btn-secondary"
               onClick={onEnableNotifications}
               disabled={!notificationSupported}
             >
               通知を有効化
+            </button>
+            <button
+              className={`btn btn-secondary ${notifyOnEnter ? 'is-toggled' : ''}`}
+              onClick={onToggleNotifyOnEnter}
+              disabled={!notificationSupported}
+            >
+              入室通知
+            </button>
+            <button
+              className={`btn btn-secondary ${notifyOnExit ? 'is-toggled' : ''}`}
+              onClick={onToggleNotifyOnExit}
+              disabled={!notificationSupported}
+            >
+              退室通知
             </button>
             <span className={`status-pill status-${notificationPermission}`}>
               {notificationLabel}
@@ -137,7 +161,7 @@ export function Toolbar({
         <span>表示 {visibleCount} / 全{totalCount} ルーム</span>
         <span>お気に入り登録 {favoriteCount} 人</span>
         <span>最終更新: {lastUpdatedLabel}</span>
-        <span>★/🔔 でローカルお気に入り登録</span>
+        <span>★/🔔 でお気に入り・通知設定</span>
       </div>
     </section>
   );

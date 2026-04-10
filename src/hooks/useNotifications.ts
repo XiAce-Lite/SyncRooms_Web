@@ -4,7 +4,15 @@ import type { RoomPresenceEvent } from '../types';
 
 type PermissionState = NotificationPermission | 'unsupported';
 
-export function useNotifications(onRoomFocus?: (roomId: string) => void) {
+interface NotificationOptions {
+  notifyOnEnter?: boolean;
+  notifyOnExit?: boolean;
+}
+
+export function useNotifications(
+  onRoomFocus?: (roomId: string) => void,
+  options?: NotificationOptions,
+) {
   const isSupported = typeof window !== 'undefined' && 'Notification' in window;
   const [permission, setPermission] = useState<PermissionState>(
     isSupported ? Notification.permission : 'unsupported',
@@ -32,12 +40,20 @@ export function useNotifications(onRoomFocus?: (roomId: string) => void) {
         return;
       }
 
+      if (event.type === 'enter' && options?.notifyOnEnter === false) {
+        return;
+      }
+
+      if (event.type === 'exit' && options?.notifyOnExit === false) {
+        return;
+      }
+
       const body =
         event.type === 'enter'
           ? `${event.nickname} さんが、${event.roomName} に入室しました。`
           : `${event.nickname} さんが、${event.roomName} から退室しました。`;
 
-      const notification = new Notification('SyncRooms Web', {
+      const notification = new Notification('SyncRooms', {
         body,
         tag:
           event.type === 'enter'
@@ -51,7 +67,7 @@ export function useNotifications(onRoomFocus?: (roomId: string) => void) {
         notification.close();
       };
     },
-    [isSupported, onRoomFocus, permission],
+    [isSupported, onRoomFocus, options?.notifyOnEnter, options?.notifyOnExit, permission],
   );
 
   return {

@@ -28,11 +28,13 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 14px;
 }
 
 body {
   margin: 0;
   min-width: 320px;
+  font-size: 13px;
   background:
     radial-gradient(circle at top left, rgba(76, 111, 255, 0.12), transparent 0,
       transparent 35%),

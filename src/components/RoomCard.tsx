@@ -1,5 +1,6 @@
 import {
   formatLastPlayedPart,
+  formatRoomTagLabel,
   getAvatarUrl,
   isOfficialTestRoom,
 } from '../logic';
@@ -52,13 +53,14 @@ export function RoomCard({
   onToggleFavorite,
   onToggleAlert,
 }: RoomCardProps) {
-  const badges = [
-    isOfficialTestRoom(room) ? 'TEST' : null,
-    favoriteStats.hasAlertTarget ? `通知対象 ${favoriteStats.alertCount}` : null,
-    favoriteStats.hasFavorite ? `お気に入り ${favoriteStats.favoriteCount}` : null,
-  ].filter(Boolean) as string[];
+  const badges = [isOfficialTestRoom(room) ? 'TEST' : null].filter(Boolean) as string[];
+  const favoriteSet = favoriteUserIds ?? new Set<string>();
+  const alertSet = alertUserIds ?? new Set<string>();
 
-  const roomTags = [...(room.tags ?? []), ...(room.customTags ?? [])];
+  const roomTags = [...(room.tags ?? []), ...(room.customTags ?? [])].map((tag) => ({
+    raw: tag,
+    label: formatRoomTagLabel(tag),
+  }));
   const visibleTags = roomTags.slice(0, 4);
   const hiddenTags = roomTags.slice(4);
 
@@ -71,32 +73,58 @@ export function RoomCard({
     >
       <div className="room-card-top">
         <div className="room-card-heading">
-          <div className="room-title-row">
-            <span className="room-lock-slot" aria-hidden="true">
-              {room.needPasswd ? <span className="room-lock-icon">🔒</span> : null}
-            </span>
-            <h2 className="room-card-title">{room.name}</h2>
-          </div>
-          <div className="room-badges">
-            {badges.map((badge) => (
-              <span key={badge} className="room-badge">
-                {badge}
-              </span>
-            ))}
-          </div>
-        </div>
+          <div className="room-title-main-row">
+            <div className="room-title-row">
+              {room.needPasswd && (
+                <span className="room-lock-slot" aria-hidden="true">
+                  <span className="room-lock-icon">🔒</span>
+                </span>
+              )}
+              <h2 className="room-card-title">{room.name}</h2>
+            </div>
 
-        <div className="room-card-actions">
-          <span className="room-member-count">
-            {room.members.length}/{room.maxMemberCount}
-          </span>
-          <button className="btn btn-primary" onClick={() => onJoin(room.roomId)}>
-            入室
-          </button>
+            <div className="room-card-actions room-card-actions-inline">
+              <span className="room-member-count">
+                {room.members.length}/{room.maxMemberCount}
+              </span>
+              <button
+                className="btn join-icon-button"
+                onClick={() => onJoin(room.roomId)}
+                aria-label="入室"
+                title="入室"
+              >
+                🚪
+              </button>
+            </div>
+          </div>
+
+          <div className="room-status-row">
+            <div className="room-status-content">
+              {badges.map((badge) => (
+                <span key={badge} className="room-badge">
+                  {badge}
+                </span>
+              ))}
+              {favoriteStats.hasAlertTarget && (
+                <span className="room-stat-chip" title={`通知対象 ${favoriteStats.alertCount} 人`}>
+                  <span className="room-stat-icon room-stat-icon-alert" aria-hidden="true">
+                    🔔
+                  </span>
+                  <span>{favoriteStats.alertCount}</span>
+                </span>
+              )}
+              {favoriteStats.hasFavorite && (
+                <span className="room-stat-chip" title={`お気に入り ${favoriteStats.favoriteCount} 人`}>
+                  <span className="room-stat-icon room-stat-icon-favorite" aria-hidden="true">
+                    ★
+                  </span>
+                  <span>{favoriteStats.favoriteCount}</span>
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-
-      <p className="room-owner">オーナー: {room.ownerUser.nickname || 'ゲスト'}</p>
 
       <p className="room-description">
         {renderDescriptionText(room.description || '説明なし')}
@@ -105,14 +133,18 @@ export function RoomCard({
       {roomTags.length > 0 && (
         <div className="tag-list">
           {visibleTags.map((tag, index) => (
-            <span key={`${room.roomId}-${tag}-${index}`} className="tag-chip">
-              #{tag}
+            <span
+              key={`${room.roomId}-${tag.raw}-${index}`}
+              className="tag-chip"
+              title={tag.raw !== tag.label ? tag.raw : undefined}
+            >
+              {tag.label}
             </span>
           ))}
           {hiddenTags.length > 0 && (
             <span
               className="tag-chip tag-chip-more"
-              title={`残りのタグ: ${hiddenTags.map((tag) => `#${tag}`).join(' / ')}`}
+              title={`残りのタグ: ${hiddenTags.map((tag) => tag.label).join(' / ')}`}
             >
               …+{hiddenTags.length}
             </span>
@@ -121,15 +153,16 @@ export function RoomCard({
       )}
 
       <div className="member-grid">
-        {room.members.map((member) => {
-          const isFavorite = favoriteUserIds.has(member.userId);
-          const isAlertOn = alertUserIds.has(member.userId);
+        {room.members.map((member, index) => {
+          const isFavorite = favoriteSet.has(member.userId);
+          const isAlertOn = alertSet.has(member.userId);
+          const isOwner = member.userId === room.ownerUser.userId;
           const avatarUrl = getAvatarUrl(member.avatar);
 
           return (
             <div
-              key={`${room.roomId}-${member.userId}`}
-              className={`member-chip ${isFavorite ? 'is-favorite' : ''}`}
+              key={`${room.roomId}-${member.userId}-${index}`}
+              className={`member-chip ${isFavorite ? 'is-favorite' : ''} ${isOwner ? 'is-owner' : ''}`.trim()}
             >
               <div className="member-main">
                 {avatarUrl ? (
@@ -141,9 +174,19 @@ export function RoomCard({
                 )}
 
                 <div className="member-meta">
-                  <strong>{member.nickname || 'ゲスト'}</strong>
-                  <span>{formatLastPlayedPart(member.lastPlayedPart)}</span>
-                  {member.isBeginner && <span className="mini-badge">初心者</span>}
+                  <strong title={member.nickname || 'ゲスト'}>{member.nickname || 'ゲスト'}</strong>
+                  <div className="member-part-line">
+                    <span className="member-part" title={formatLastPlayedPart(member.lastPlayedPart)}>
+                      {formatLastPlayedPart(member.lastPlayedPart)}
+                    </span>
+                    <span
+                      className={`mini-badge mini-badge-beginner ${member.isBeginner ? '' : 'is-hidden'}`}
+                      title={member.isBeginner ? '初心者' : undefined}
+                      aria-hidden={!member.isBeginner}
+                    >
+                      🔰
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -158,7 +201,7 @@ export function RoomCard({
                 </button>
                 <button
                   type="button"
-                  className={`icon-button ${isAlertOn ? 'active' : ''}`}
+                  className={`icon-button ${isAlertOn ? 'active active-enter' : ''}`}
                   title="通知切替"
                   onClick={() => onToggleAlert(member.userId)}
                 >

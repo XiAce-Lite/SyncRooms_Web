@@ -45,6 +45,126 @@ export const REFRESH_INTERVAL_OPTIONS: Array<{
   { value: 'off', label: '手動のみ' },
 ];
 
+const ROOM_TAG_LABELS: Record<string, string> = {
+  anime: 'アニメ',
+  beginnerswelcome: '初心者歓迎',
+  'bosa nova': 'ボサノヴァ',
+  'bossa nova': 'ボサノヴァ',
+  brasil: 'ブラジル音楽',
+  chatting: '雑談',
+  countryfolk: 'カントリー / フォーク',
+  fusion: 'フュージョン',
+  games: 'ゲーム音楽',
+  hiphoprap: 'ヒップホップ / ラップ',
+  idol: 'アイドル',
+  jazz: 'ジャズ',
+  jpop: 'J-POP',
+  kpop: 'K-POP',
+  novoicewelcome: '聞き専歓迎',
+  pop: 'ポップス',
+  practicing: '練習中',
+  recording: '録音 / 制作',
+  rnbsoul: 'R&B / ソウル',
+  rock: 'ロック',
+  seekingaccompaniment: '伴奏募集',
+  seekingbassist: 'ベース募集',
+  seekingdrummers: 'ドラマー募集',
+  seekingguitarists: 'ギター募集',
+  seekingkeyboardist: 'キーボード募集',
+  seekingmembers: 'メンバー募集',
+  seekingvocalists: 'ボーカル募集',
+  streaming: '配信中',
+  testing: 'テスト',
+  vocaloid: 'ボカロ',
+};
+
+const ROOM_TAG_WORD_LABELS: Record<string, string> = {
+  anime: 'アニメ',
+  beginner: '初心者',
+  beginners: '初心者',
+  welcome: '歓迎',
+  blues: 'ブルース',
+  bosa: 'ボサ',
+  bossa: 'ボサ',
+  nova: 'ノヴァ',
+  brasil: 'ブラジル音楽',
+  chatting: '雑談',
+  country: 'カントリー',
+  folk: 'フォーク',
+  fusion: 'フュージョン',
+  game: 'ゲーム',
+  games: 'ゲーム音楽',
+  hiphop: 'ヒップホップ',
+  rap: 'ラップ',
+  idol: 'アイドル',
+  jazz: 'ジャズ',
+  jpop: 'J-POP',
+  kpop: 'K-POP',
+  no: 'なし',
+  voice: 'ボイス',
+  practicing: '練習中',
+  recording: '録音',
+  rnb: 'R&B',
+  soul: 'ソウル',
+  rock: 'ロック',
+  seeking: '募集',
+  accompaniment: '伴奏',
+  bassist: 'ベース',
+  bassists: 'ベース',
+  drummer: 'ドラム',
+  drummers: 'ドラム',
+  guitarist: 'ギター',
+  guitarists: 'ギター',
+  keyboardist: 'キーボード',
+  members: 'メンバー',
+  vocalist: 'ボーカル',
+  vocalists: 'ボーカル',
+  streaming: '配信中',
+  testing: 'テスト',
+  vocaloid: 'ボカロ',
+};
+
+function normalizeRoomTagText(tag: string) {
+  return tag
+    .replace(/^#/, '')
+    .trim()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+export function formatRoomTagLabel(tag: string) {
+  const normalizedText = normalizeRoomTagText(tag);
+
+  if (!normalizedText) {
+    return '';
+  }
+
+  const compactKey = normalizedText.toLowerCase().replace(/\s+/g, '');
+  const spacedKey = normalizedText.toLowerCase();
+  const directMatch = ROOM_TAG_LABELS[compactKey] ?? ROOM_TAG_LABELS[spacedKey];
+
+  if (directMatch) {
+    return directMatch;
+  }
+
+  if (/[ぁ-んァ-ヶー一-龠]/.test(normalizedText)) {
+    return normalizedText;
+  }
+
+  const translatedTokens = normalizedText
+    .toLowerCase()
+    .split(' ')
+    .map((token) => ROOM_TAG_WORD_LABELS[token] ?? token)
+    .filter(Boolean);
+
+  if (translatedTokens.some((token) => /[ぁ-んァ-ヶー一-龠A-Z]/.test(token))) {
+    return translatedTokens.join(' / ');
+  }
+
+  return normalizedText;
+}
+
 export function isOfficialTestRoom(room: Pick<GuestRoom, 'isTestRoom' | 'name'>) {
   return room.isTestRoom || room.name === OFFICIAL_TEST_ROOM_NAME;
 }
@@ -74,11 +194,31 @@ export function loadFavoriteSettings(): FavoriteSetting[] {
         return false;
       }
 
-      const maybeFavorite = item as Partial<FavoriteSetting>;
+      const maybeFavorite = item as Partial<FavoriteSetting> & {
+        notifyOnEnter?: boolean;
+        notifyOnExit?: boolean;
+      };
+
       return (
         typeof maybeFavorite.targetUserId === 'string' &&
-        typeof maybeFavorite.alertOn === 'boolean'
+        (typeof maybeFavorite.alertOn === 'boolean' ||
+          typeof maybeFavorite.notifyOnEnter === 'boolean' ||
+          typeof maybeFavorite.notifyOnExit === 'boolean')
       );
+    }).map((item) => {
+      const maybeFavorite = item as Partial<FavoriteSetting> & {
+        notifyOnEnter?: boolean;
+        notifyOnExit?: boolean;
+      };
+      const fallbackAlert =
+        typeof maybeFavorite.alertOn === 'boolean'
+          ? maybeFavorite.alertOn
+          : Boolean(maybeFavorite.notifyOnEnter || maybeFavorite.notifyOnExit);
+
+      return {
+        targetUserId: maybeFavorite.targetUserId as string,
+        alertOn: fallbackAlert,
+      };
     });
   } catch {
     return DEFAULT_FAVORITES;

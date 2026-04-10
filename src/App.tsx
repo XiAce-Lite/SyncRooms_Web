@@ -66,8 +66,14 @@ function App() {
     });
   }, []);
 
+  const [notifyOnEnter, setNotifyOnEnter] = useState(true);
+  const [notifyOnExit, setNotifyOnExit] = useState(true);
+
   const { isSupported, permission, requestPermission, notifyRoomEvent } =
-    useNotifications(focusRoom);
+    useNotifications(focusRoom, {
+      notifyOnEnter,
+      notifyOnExit,
+    });
 
   useEffect(() => {
     document.title = 'SyncRooms';
@@ -238,6 +244,10 @@ function App() {
         onEnableNotifications={() => {
           void requestPermission();
         }}
+        notifyOnEnter={notifyOnEnter}
+        notifyOnExit={notifyOnExit}
+        onToggleNotifyOnEnter={() => setNotifyOnEnter((current) => !current)}
+        onToggleNotifyOnExit={() => setNotifyOnExit((current) => !current)}
         notificationSupported={isSupported}
         notificationPermission={permission}
         isRefreshing={isRefreshing}
