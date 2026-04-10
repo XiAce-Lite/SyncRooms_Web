@@ -96,7 +96,7 @@ export interface RoomFilters {
   showTestRooms: boolean;
 }
 
-export type RefreshIntervalOption = 1 | 3 | 5 | 10 | 30 | 'off';
+export type RefreshIntervalOption = 0.5 | 1 | 3 | 5 | 10 | 30 | 'off';
 
 export interface RoomFavoriteStats {
   favoriteCount: number;

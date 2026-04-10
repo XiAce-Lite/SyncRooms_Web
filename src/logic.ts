@@ -16,6 +16,8 @@ export const SYNCROOM_GUEST_API =
 
 export const OFFICIAL_TEST_ROOM_NAME = 'Official Test Room';
 export const FAVORITES_STORAGE_KEY = 'syncrooms-web:favorites';
+export const FILTERS_STORAGE_KEY = 'syncrooms-web:filters';
+export const REFRESH_INTERVAL_STORAGE_KEY = 'syncrooms-web:refresh-interval';
 
 export const DEFAULT_FAVORITES: FavoriteSetting[] = [];
 
@@ -24,7 +26,7 @@ export const DEFAULT_FILTERS: RoomFilters = {
   showKorea: true,
   showUnlocked: true,
   showLocked: true,
-  showTestRooms: false,
+  showTestRooms: true,
 };
 
 export const DEFAULT_SORT_MODE: SortMode = 'FAVORITE_ALERT_FIRST';
@@ -34,6 +36,7 @@ export const REFRESH_INTERVAL_OPTIONS: Array<{
   value: RefreshIntervalOption;
   label: string;
 }> = [
+  { value: 0.5, label: '30秒' },
   { value: 1, label: '1分' },
   { value: 3, label: '3分' },
   { value: 5, label: '5分' },
@@ -88,6 +91,97 @@ export function saveFavoriteSettings(favorites: FavoriteSetting[]) {
   }
 
   window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+}
+
+export function loadFilterSettings(): RoomFilters {
+  if (typeof window === 'undefined') {
+    return DEFAULT_FILTERS;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_FILTERS;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<RoomFilters> | null;
+    if (!parsed || typeof parsed !== 'object') {
+      return DEFAULT_FILTERS;
+    }
+
+    return {
+      showJapan:
+        typeof parsed.showJapan === 'boolean'
+          ? parsed.showJapan
+          : DEFAULT_FILTERS.showJapan,
+      showKorea:
+        typeof parsed.showKorea === 'boolean'
+          ? parsed.showKorea
+          : DEFAULT_FILTERS.showKorea,
+      showUnlocked:
+        typeof parsed.showUnlocked === 'boolean'
+          ? parsed.showUnlocked
+          : DEFAULT_FILTERS.showUnlocked,
+      showLocked:
+        typeof parsed.showLocked === 'boolean'
+          ? parsed.showLocked
+          : DEFAULT_FILTERS.showLocked,
+      showTestRooms:
+        typeof parsed.showTestRooms === 'boolean'
+          ? parsed.showTestRooms
+          : DEFAULT_FILTERS.showTestRooms,
+    };
+  } catch {
+    return DEFAULT_FILTERS;
+  }
+}
+
+export function saveFilterSettings(filters: RoomFilters) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+}
+
+export function loadRefreshIntervalSetting(): RefreshIntervalOption {
+  if (typeof window === 'undefined') {
+    return DEFAULT_REFRESH_INTERVAL;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(REFRESH_INTERVAL_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_REFRESH_INTERVAL;
+    }
+
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed === 'off') {
+      return 'off';
+    }
+
+    const numericValue = typeof parsed === 'number' ? parsed : Number(parsed);
+    const supportedValues: RefreshIntervalOption[] = [0.5, 1, 3, 5, 10, 30, 'off'];
+
+    return supportedValues.includes(numericValue as RefreshIntervalOption)
+      ? (numericValue as RefreshIntervalOption)
+      : DEFAULT_REFRESH_INTERVAL;
+  } catch {
+    return DEFAULT_REFRESH_INTERVAL;
+  }
+}
+
+export function saveRefreshIntervalSetting(
+  refreshInterval: RefreshIntervalOption,
+) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(
+    REFRESH_INTERVAL_STORAGE_KEY,
+    JSON.stringify(refreshInterval),
+  );
 }
 
 export function getFavoriteUserIds(favorites: FavoriteSetting[]) {
@@ -172,29 +266,16 @@ export function sortRooms(
   }));
 
   decorated.sort((left, right) => {
-    const testRoomDiff =
-      Number(isOfficialTestRoom(left.room)) - Number(isOfficialTestRoom(right.room));
-
-    if (testRoomDiff !== 0) {
-      return testRoomDiff;
-    }
-
     if (sortMode === 'FAVORITE_ALERT_FIRST') {
       if (left.stats.hasAlertTarget !== right.stats.hasAlertTarget) {
         return Number(right.stats.hasAlertTarget) - Number(left.stats.hasAlertTarget);
       }
 
-      if (left.stats.alertCount !== right.stats.alertCount) {
-        return right.stats.alertCount - left.stats.alertCount;
+      if (left.stats.hasFavorite !== right.stats.hasFavorite) {
+        return Number(right.stats.hasFavorite) - Number(left.stats.hasFavorite);
       }
 
-      if (left.room.members.length !== right.room.members.length) {
-        return right.room.members.length - left.room.members.length;
-      }
-
-      if (left.room.onlinedAt !== right.room.onlinedAt) {
-        return right.room.onlinedAt - left.room.onlinedAt;
-      }
+      return left.index - right.index;
     }
 
     if (sortMode === 'FAVORITE_COUNT_FIRST') {
@@ -202,13 +283,7 @@ export function sortRooms(
         return right.stats.favoriteCount - left.stats.favoriteCount;
       }
 
-      if (left.room.members.length !== right.room.members.length) {
-        return right.room.members.length - left.room.members.length;
-      }
-
-      if (left.room.onlinedAt !== right.room.onlinedAt) {
-        return right.room.onlinedAt - left.room.onlinedAt;
-      }
+      return left.index - right.index;
     }
 
     return left.index - right.index;

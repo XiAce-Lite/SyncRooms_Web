@@ -6,8 +6,6 @@ import { Toolbar } from './components/Toolbar';
 import { useNotifications } from './hooks/useNotifications';
 import {
   buildJoinLink,
-  DEFAULT_FILTERS,
-  DEFAULT_REFRESH_INTERVAL,
   DEFAULT_SORT_MODE,
   diffRoomSnapshots,
   filterRooms,
@@ -15,7 +13,11 @@ import {
   getFavoriteUserIds,
   getRoomFavoriteStats,
   loadFavoriteSettings,
+  loadFilterSettings,
+  loadRefreshIntervalSetting,
   saveFavoriteSettings,
+  saveFilterSettings,
+  saveRefreshIntervalSetting,
   sortRooms,
   SYNCROOM_GUEST_API,
 } from './logic';
@@ -25,7 +27,6 @@ import type {
   GuestRoomsResponse,
   RefreshIntervalOption,
   RoomFilters,
-  SortMode,
 } from './types';
 
 function App() {
@@ -34,10 +35,9 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
-  const [filters, setFilters] = useState<RoomFilters>(DEFAULT_FILTERS);
-  const [sortMode, setSortMode] = useState<SortMode>(DEFAULT_SORT_MODE);
+  const [filters, setFilters] = useState<RoomFilters>(() => loadFilterSettings());
   const [refreshInterval, setRefreshInterval] =
-    useState<RefreshIntervalOption>(DEFAULT_REFRESH_INTERVAL);
+    useState<RefreshIntervalOption>(() => loadRefreshIntervalSetting());
   const [favorites, setFavorites] = useState<FavoriteSetting[]>(() =>
     loadFavoriteSettings(),
   );
@@ -70,13 +70,21 @@ function App() {
     useNotifications(focusRoom);
 
   useEffect(() => {
-    document.title = 'SyncRooms Web';
+    document.title = 'SyncRooms';
   }, []);
 
   useEffect(() => {
     favoritesRef.current = favorites;
     saveFavoriteSettings(favorites);
   }, [favorites]);
+
+  useEffect(() => {
+    saveFilterSettings(filters);
+  }, [filters]);
+
+  useEffect(() => {
+    saveRefreshIntervalSetting(refreshInterval);
+  }, [refreshInterval]);
 
   useEffect(() => {
     if (!highlightedRoomId) {
@@ -161,8 +169,8 @@ function App() {
   const alertUserIds = useMemo(() => getAlertUserIds(favorites), [favorites]);
 
   const visibleRooms = useMemo(
-    () => sortRooms(filterRooms(rooms, filters), favorites, sortMode),
-    [favorites, filters, rooms, sortMode],
+    () => sortRooms(filterRooms(rooms, filters), favorites, DEFAULT_SORT_MODE),
+    [favorites, filters, rooms],
   );
 
   const roomStatsById = useMemo(
@@ -218,29 +226,11 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <div className="app-title-row">
-          <div>
-            <p className="app-kicker">Yamaha SYNCROOM public guest API viewer</p>
-            <h1>SyncRooms Web</h1>
-            <p className="app-subtitle">
-              SYNCROOM の public ルームを定期取得し、お気に入りユーザの入室/退室を
-              Web 通知で検知します。
-            </p>
-          </div>
-          <span className="app-badge">guest API only</span>
-        </div>
-        <p className="app-note">
-          「入室」ボタンはプレースホルダ導線です。通知本文には時刻を含めていません。
-        </p>
-      </header>
-
       <Toolbar
+        title="SyncRooms"
         filters={filters}
-        sortMode={sortMode}
         refreshInterval={refreshInterval}
         onFiltersChange={updateFilters}
-        onSortModeChange={setSortMode}
         onRefreshIntervalChange={setRefreshInterval}
         onManualRefresh={() => {
           void fetchRooms();

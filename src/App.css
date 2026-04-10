@@ -1,62 +1,11 @@
 .app-shell {
-  max-width: 1280px;
+  max-width: 1840px;
   margin: 0 auto;
   padding: 20px;
 }
 
-.app-header {
-  padding: 24px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: linear-gradient(135deg, #ffffff 0%, #eef3ff 100%);
-  box-shadow: 0 10px 30px rgba(76, 111, 255, 0.08);
-}
-
-.app-title-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.app-kicker {
-  margin: 0 0 8px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--primary);
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: clamp(2rem, 3vw, 2.8rem);
-}
-
-.app-subtitle {
-  margin: 12px 0 0;
-  max-width: 760px;
-  color: var(--muted);
-}
-
-.app-badge {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(76, 111, 255, 0.1);
-  color: var(--primary);
-  font-size: 0.8rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.app-note {
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
 .toolbar {
-  margin-top: 18px;
+  margin-top: 0;
   padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--line);
@@ -65,31 +14,59 @@
 }
 
 .toolbar-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+}
+
+.toolbar-title-block {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 100%;
+}
+
+.toolbar-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+  line-height: 1.2;
+  white-space: normal;
 }
 
 .toolbar-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+}
+
+.toolbar-filters {
+  flex: 1 1 340px;
+}
+
+.toolbar-refresh {
+  flex: 1 1 420px;
 }
 
 .toolbar select {
-  min-height: 42px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 10px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
+  font-size: 0.9rem;
 }
 
 .toolbar-actions {
-  justify-content: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
 }
 
 .field-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--muted);
 }
@@ -119,11 +96,12 @@
 }
 
 .btn {
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 12px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
   border: 1px solid transparent;
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .btn:disabled {
@@ -150,10 +128,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 10px;
   border-radius: 999px;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -184,9 +162,33 @@
 
 .room-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-top: 18px;
+}
+
+@media (min-width: 900px) {
+  .room-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .room-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1500px) {
+  .room-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1800px) {
+  .room-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .room-card {
@@ -201,7 +203,13 @@
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.room-card.is-locked {
+  background: #f3f4f6;
+  border-color: #d8dde6;
 }
 
 .room-card:hover {
@@ -218,12 +226,57 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.room-card-heading {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.room-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.room-lock-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  min-width: 18px;
+  color: #6b7280;
+}
+
+.room-lock-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.room-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .room-card-title {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-member-count {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .room-badges,
@@ -231,6 +284,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.tag-list {
+  max-height: 52px;
+  overflow: hidden;
 }
 
 .room-badge,
@@ -242,35 +300,42 @@
   color: var(--primary);
   font-size: 0.76rem;
   font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.room-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-}
-
-.room-stats div {
-  padding: 10px;
-  border-radius: 12px;
-  background: var(--panel-soft);
-}
-
-.room-stats dt {
-  font-size: 0.75rem;
+.tag-chip-more {
+  background: rgba(27, 31, 51, 0.08);
   color: var(--muted);
+  cursor: help;
 }
 
-.room-stats dd {
-  margin: 4px 0 0;
-  font-weight: 700;
+.room-owner {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .room-description {
   margin: 0;
-  min-height: 42px;
+  height: calc(1.4em * 3);
   color: var(--muted);
+  line-height: 1.4;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.room-description a {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .member-grid {
@@ -346,11 +411,17 @@
   border-radius: 10px;
   border: 1px solid var(--line);
   background: #fff;
+  color: #2f3441;
 }
 
 .icon-button.active {
-  border-color: #e7b300;
-  background: rgba(247, 201, 72, 0.22);
+  border-color: #f2c94c;
+  background: rgba(255, 215, 90, 0.24);
+}
+
+.icon-button.active:first-child {
+  color: #f4c542;
+  text-shadow: 0 0 0.5px #d9a500;
 }
 
 .retry-panel,

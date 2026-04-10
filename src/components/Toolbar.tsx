@@ -1,15 +1,11 @@
-import {
-  DEFAULT_SORT_MODE,
-  REFRESH_INTERVAL_OPTIONS,
-} from '../logic';
-import type { RefreshIntervalOption, RoomFilters, SortMode } from '../types';
+import { REFRESH_INTERVAL_OPTIONS } from '../logic';
+import type { RefreshIntervalOption, RoomFilters } from '../types';
 
 interface ToolbarProps {
+  title: string;
   filters: RoomFilters;
-  sortMode: SortMode;
   refreshInterval: RefreshIntervalOption;
   onFiltersChange: (next: Partial<RoomFilters>) => void;
-  onSortModeChange: (value: SortMode) => void;
   onRefreshIntervalChange: (value: RefreshIntervalOption) => void;
   onManualRefresh: () => void;
   onEnableNotifications: () => void;
@@ -23,11 +19,10 @@ interface ToolbarProps {
 }
 
 export function Toolbar({
+  title,
   filters,
-  sortMode,
   refreshInterval,
   onFiltersChange,
-  onSortModeChange,
   onRefreshIntervalChange,
   onManualRefresh,
   onEnableNotifications,
@@ -50,103 +45,91 @@ export function Toolbar({
   return (
     <section className="toolbar">
       <div className="toolbar-grid">
-        <div className="toolbar-section">
-          <label className="field-label" htmlFor="sortMode">
-            並び順
-          </label>
-          <select
-            id="sortMode"
-            value={sortMode}
-            onChange={(event) => onSortModeChange(event.target.value as SortMode)}
-          >
-            <option value={DEFAULT_SORT_MODE}>お気に入り通知対象を優先</option>
-            <option value="FAVORITE_COUNT_FIRST">お気に入り人数が多い順</option>
-            <option value="DEFAULT">API順</option>
-          </select>
+        <div className="toolbar-title-block">
+          <h1 className="toolbar-title">{title}</h1>
         </div>
 
-        <div className="toolbar-section">
+        <div className="toolbar-section toolbar-filters">
+          <span className="field-label">表示フィルタ</span>
+          <div className="check-grid">
+            <label>
+              <input
+                type="checkbox"
+                checked={filters.showJapan}
+                onChange={(event) => onFiltersChange({ showJapan: event.target.checked })}
+              />
+              日本
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={filters.showKorea}
+                onChange={(event) => onFiltersChange({ showKorea: event.target.checked })}
+              />
+              韓国
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={filters.showUnlocked}
+                onChange={(event) => onFiltersChange({ showUnlocked: event.target.checked })}
+              />
+              鍵なし
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={filters.showLocked}
+                onChange={(event) => onFiltersChange({ showLocked: event.target.checked })}
+              />
+              鍵あり
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={filters.showTestRooms}
+                onChange={(event) => onFiltersChange({ showTestRooms: event.target.checked })}
+              />
+              テストルーム
+            </label>
+          </div>
+        </div>
+
+        <div className="toolbar-section toolbar-refresh">
           <label className="field-label" htmlFor="refreshInterval">
             自動更新
           </label>
-          <select
-            id="refreshInterval"
-            value={String(refreshInterval)}
-            onChange={(event) => {
-              const value = event.target.value;
-              onRefreshIntervalChange(
-                value === 'off' ? 'off' : (Number(value) as RefreshIntervalOption),
-              );
-            }}
-          >
-            {REFRESH_INTERVAL_OPTIONS.map((option) => (
-              <option key={String(option.value)} value={String(option.value)}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="toolbar-section toolbar-actions">
-          <button className="btn btn-primary" onClick={onManualRefresh} disabled={isRefreshing}>
-            {isRefreshing ? '更新中…' : '手動更新'}
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={onEnableNotifications}
-            disabled={!notificationSupported}
-          >
-            通知を有効化
-          </button>
-          <span className={`status-pill status-${notificationPermission}`}>
-            {notificationLabel}
-          </span>
-        </div>
-      </div>
-
-      <div className="toolbar-section">
-        <span className="field-label">表示フィルタ</span>
-        <div className="check-grid">
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.showJapan}
-              onChange={(event) => onFiltersChange({ showJapan: event.target.checked })}
-            />
-            日本側
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.showKorea}
-              onChange={(event) => onFiltersChange({ showKorea: event.target.checked })}
-            />
-            韓国側
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.showUnlocked}
-              onChange={(event) => onFiltersChange({ showUnlocked: event.target.checked })}
-            />
-            鍵なし
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.showLocked}
-              onChange={(event) => onFiltersChange({ showLocked: event.target.checked })}
-            />
-            鍵あり
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.showTestRooms}
-              onChange={(event) => onFiltersChange({ showTestRooms: event.target.checked })}
-            />
-            Test Room 表示
-          </label>
+          <div className="toolbar-actions">
+            <select
+              id="refreshInterval"
+              value={String(refreshInterval)}
+              onChange={(event) => {
+                const value = event.target.value;
+                onRefreshIntervalChange(
+                  value === 'off' ? 'off' : (Number(value) as RefreshIntervalOption),
+                );
+              }}
+            >
+              {REFRESH_INTERVAL_OPTIONS.map((option) => (
+                <option key={String(option.value)} value={String(option.value)}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button className="btn btn-primary" onClick={onManualRefresh} disabled={isRefreshing}>
+              {isRefreshing ? '更新中…' : '手動更新'}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={onEnableNotifications}
+              disabled={!notificationSupported}
+            >
+              通知を有効化
+            </button>
+            <span className={`status-pill status-${notificationPermission}`}>
+              {notificationLabel}
+            </span>
+          </div>
         </div>
       </div>
 

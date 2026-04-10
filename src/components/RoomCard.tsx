@@ -1,10 +1,35 @@
 import {
-  formatDuration,
   formatLastPlayedPart,
   getAvatarUrl,
   isOfficialTestRoom,
 } from '../logic';
 import type { GuestRoom, RoomFavoriteStats } from '../types';
+
+const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+
+function renderDescriptionText(text: string) {
+  return text.split(URL_PATTERN).map((part, index) => {
+    if (!part) {
+      return null;
+    }
+
+    if (/^https?:\/\/[^\s]+$/i.test(part)) {
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={part}
+          target="_blank"
+          rel="noreferrer noopener"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+
+    return <span key={`${index}-${part}`}>{part}</span>;
+  });
+}
 
 interface RoomCardProps {
   room: GuestRoom;
@@ -28,27 +53,30 @@ export function RoomCard({
   onToggleAlert,
 }: RoomCardProps) {
   const badges = [
-    room.ownerUser.idProvider === 'ymid-jp'
-      ? 'JP'
-      : room.ownerUser.idProvider === 'ymid-kr'
-        ? 'KR'
-        : '公開',
-    room.needPasswd ? '鍵あり' : '鍵なし',
     isOfficialTestRoom(room) ? 'TEST' : null,
     favoriteStats.hasAlertTarget ? `通知対象 ${favoriteStats.alertCount}` : null,
     favoriteStats.hasFavorite ? `お気に入り ${favoriteStats.favoriteCount}` : null,
   ].filter(Boolean) as string[];
 
   const roomTags = [...(room.tags ?? []), ...(room.customTags ?? [])];
+  const visibleTags = roomTags.slice(0, 4);
+  const hiddenTags = roomTags.slice(4);
 
   return (
     <article
-      className={`room-card ${isHighlighted ? 'is-highlighted' : ''}`}
+      className={`room-card ${isHighlighted ? 'is-highlighted' : ''} ${
+        room.needPasswd ? 'is-locked' : ''
+      }`}
       data-room-id={room.roomId}
     >
       <div className="room-card-top">
-        <div>
-          <h2 className="room-card-title">{room.name}</h2>
+        <div className="room-card-heading">
+          <div className="room-title-row">
+            <span className="room-lock-slot" aria-hidden="true">
+              {room.needPasswd ? <span className="room-lock-icon">🔒</span> : null}
+            </span>
+            <h2 className="room-card-title">{room.name}</h2>
+          </div>
           <div className="room-badges">
             {badges.map((badge) => (
               <span key={badge} className="room-badge">
@@ -58,37 +86,37 @@ export function RoomCard({
           </div>
         </div>
 
-        <button className="btn btn-primary" onClick={() => onJoin(room.roomId)}>
-          入室
-        </button>
+        <div className="room-card-actions">
+          <span className="room-member-count">
+            {room.members.length}/{room.maxMemberCount}
+          </span>
+          <button className="btn btn-primary" onClick={() => onJoin(room.roomId)}>
+            入室
+          </button>
+        </div>
       </div>
 
-      <dl className="room-stats">
-        <div>
-          <dt>人数</dt>
-          <dd>
-            {room.members.length} / {room.maxMemberCount}
-          </dd>
-        </div>
-        <div>
-          <dt>オーナー</dt>
-          <dd>{room.ownerUser.nickname || 'ゲスト'}</dd>
-        </div>
-        <div>
-          <dt>経過</dt>
-          <dd>{formatDuration(room.onlineDurationSecs)}</dd>
-        </div>
-      </dl>
+      <p className="room-owner">オーナー: {room.ownerUser.nickname || 'ゲスト'}</p>
 
-      <p className="room-description">{room.description || '説明なし'}</p>
+      <p className="room-description">
+        {renderDescriptionText(room.description || '説明なし')}
+      </p>
 
       {roomTags.length > 0 && (
         <div className="tag-list">
-          {roomTags.map((tag) => (
-            <span key={`${room.roomId}-${tag}`} className="tag-chip">
+          {visibleTags.map((tag, index) => (
+            <span key={`${room.roomId}-${tag}-${index}`} className="tag-chip">
               #{tag}
             </span>
           ))}
+          {hiddenTags.length > 0 && (
+            <span
+              className="tag-chip tag-chip-more"
+              title={`残りのタグ: ${hiddenTags.map((tag) => `#${tag}`).join(' / ')}`}
+            >
+              …+{hiddenTags.length}
+            </span>
+          )}
         </div>
       )}
 
