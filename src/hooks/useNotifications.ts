@@ -1,0 +1,63 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import type { RoomPresenceEvent } from '../types';
+
+type PermissionState = NotificationPermission | 'unsupported';
+
+export function useNotifications(onRoomFocus?: (roomId: string) => void) {
+  const isSupported = typeof window !== 'undefined' && 'Notification' in window;
+  const [permission, setPermission] = useState<PermissionState>(
+    isSupported ? Notification.permission : 'unsupported',
+  );
+
+  useEffect(() => {
+    if (isSupported) {
+      setPermission(Notification.permission);
+    }
+  }, [isSupported]);
+
+  const requestPermission = useCallback(async () => {
+    if (!isSupported) {
+      return 'unsupported' as const;
+    }
+
+    const nextPermission = await Notification.requestPermission();
+    setPermission(nextPermission);
+    return nextPermission;
+  }, [isSupported]);
+
+  const notifyRoomEvent = useCallback(
+    (event: RoomPresenceEvent) => {
+      if (!isSupported || permission !== 'granted') {
+        return;
+      }
+
+      const body =
+        event.type === 'enter'
+          ? `${event.nickname} さんが、${event.roomName} に入室しました。`
+          : `${event.nickname} さんが、${event.roomName} から退室しました。`;
+
+      const notification = new Notification('SyncRooms Web', {
+        body,
+        tag:
+          event.type === 'enter'
+            ? `enter:${event.userId}:${event.roomId}`
+            : `exit:${event.userId}:${event.roomId}:${Date.now()}`,
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        onRoomFocus?.(event.roomId);
+        notification.close();
+      };
+    },
+    [isSupported, onRoomFocus, permission],
+  );
+
+  return {
+    isSupported,
+    permission,
+    requestPermission,
+    notifyRoomEvent,
+  };
+}
