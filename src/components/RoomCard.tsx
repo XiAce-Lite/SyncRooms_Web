@@ -38,7 +38,7 @@ interface RoomCardProps {
   favoriteUserIds: Set<string>;
   alertUserIds: Set<string>;
   isHighlighted: boolean;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: GuestRoom) => void;
   onToggleFavorite: (userId: string) => void;
   onToggleAlert: (userId: string) => void;
 }
@@ -89,7 +89,7 @@ export function RoomCard({
               </span>
               <button
                 className="btn join-icon-button"
-                onClick={() => onJoin(room.roomId)}
+                onClick={() => onJoin(room)}
                 aria-label="入室"
                 title="入室"
               >

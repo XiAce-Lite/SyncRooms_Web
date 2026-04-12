@@ -11,7 +11,7 @@ interface RoomListProps {
   alertUserIds: Set<string>;
   roomStatsById: Map<string, RoomFavoriteStats>;
   onRetry: () => void;
-  onJoin: (roomId: string) => void;
+  onJoin: (room: GuestRoom) => void;
   onToggleFavorite: (userId: string) => void;
   onToggleAlert: (userId: string) => void;
 }

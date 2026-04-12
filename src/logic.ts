@@ -169,8 +169,16 @@ export function isOfficialTestRoom(room: Pick<GuestRoom, 'isTestRoom' | 'name'>)
   return room.isTestRoom || room.name === OFFICIAL_TEST_ROOM_NAME;
 }
 
-export function buildJoinLink(roomId: string): string {
-  return `syncroom://join?roomId=${encodeURIComponent(roomId)}`;
+export function buildJoinLink(
+  room: Pick<GuestRoom, 'roomId' | 'name' | 'needPasswd'>,
+): string {
+  const params = new URLSearchParams({
+    roomName: room.name,
+    roomId: room.roomId,
+    requirePassword: room.needPasswd ? '1' : '0',
+  });
+
+  return `https://webapi.syncroom.appservice.yamaha.com/launch_app?${params.toString()}`;
 }
 
 export function loadFavoriteSettings(): FavoriteSetting[] {

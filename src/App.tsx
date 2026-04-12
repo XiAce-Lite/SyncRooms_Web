@@ -194,8 +194,9 @@ function App() {
     setFilters((current) => ({ ...current, ...next }));
   }, []);
 
-  const handleJoin = useCallback((roomId: string) => {
-    window.location.href = buildJoinLink(roomId);
+  const handleJoin = useCallback((room: GuestRoom) => {
+    const joinLink = buildJoinLink(room);
+    window.open(joinLink, '_blank', 'noopener,noreferrer');
   }, []);
 
   const toggleFavorite = useCallback((userId: string) => {
