@@ -71,6 +71,14 @@
   gap: 8px;
 }
 
+.toolbar-refresh-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
 .toolbar-refresh-controls {
   display: flex;
   flex-wrap: wrap;
@@ -752,6 +760,70 @@
   .toolbar-expand-toggle,
   .toolbar-extra-panel {
     display: none;
+  }
+}
+
+/* ワイド: フィルタ左半分・自動更新+通知を右半分で1行に */
+@media (min-width: 1100px) and (min-height: 481px) {
+  .toolbar-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(420px, 1fr);
+    align-items: start;
+    gap: 10px 20px;
+  }
+
+  .toolbar-title-block {
+    grid-column: 1 / -1;
+  }
+
+  .toolbar-filters {
+    flex: unset;
+    grid-column: 1;
+  }
+
+  .toolbar-refresh {
+    flex: unset;
+    margin-left: 0;
+    padding-right: 0;
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toolbar-refresh > .field-label {
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  .toolbar-refresh-body {
+    flex: 1 1 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .toolbar-refresh-controls {
+    width: auto;
+    flex: 0 1 auto;
+  }
+
+  .toolbar-refresh-controls .toolbar-refresh-row {
+    flex: 0 1 auto;
+  }
+
+  .toolbar-notify-wide {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .toolbar-notify-wide .toolbar-notify-row {
+    width: auto;
+    flex-wrap: nowrap;
   }
 }
 

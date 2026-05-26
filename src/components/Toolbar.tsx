@@ -197,40 +197,42 @@ export function Toolbar({
           <label className="field-label" htmlFor="refreshInterval">
             自動更新
           </label>
-          <div className="toolbar-refresh-controls">
-            <div className="toolbar-actions toolbar-refresh-row">
-              <select
-                id="refreshInterval"
-                value={String(refreshInterval)}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  onRefreshIntervalChange(
-                    value === 'off' ? 'off' : (Number(value) as RefreshIntervalOption),
-                  );
-                }}
+          <div className="toolbar-refresh-body">
+            <div className="toolbar-refresh-controls">
+              <div className="toolbar-actions toolbar-refresh-row">
+                <select
+                  id="refreshInterval"
+                  value={String(refreshInterval)}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    onRefreshIntervalChange(
+                      value === 'off' ? 'off' : (Number(value) as RefreshIntervalOption),
+                    );
+                  }}
+                >
+                  {REFRESH_INTERVAL_OPTIONS.map((option) => (
+                    <option key={String(option.value)} value={String(option.value)}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <button className="btn btn-primary" onClick={onManualRefresh} disabled={isRefreshing}>
+                  {isRefreshing ? '更新中…' : '手動更新'}
+                </button>
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary toolbar-expand-toggle"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                aria-expanded={isExpanded}
+                aria-controls="toolbar-extra-panel"
               >
-                {REFRESH_INTERVAL_OPTIONS.map((option) => (
-                  <option key={String(option.value)} value={String(option.value)}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <button className="btn btn-primary" onClick={onManualRefresh} disabled={isRefreshing}>
-                {isRefreshing ? '更新中…' : '手動更新'}
+                {isExpanded ? '詳細を閉じる ▲' : '詳細を表示 ▼'}
               </button>
             </div>
-            <button
-              type="button"
-              className="btn btn-secondary toolbar-expand-toggle"
-              onClick={() => setIsExpanded((prev) => !prev)}
-              aria-expanded={isExpanded}
-              aria-controls="toolbar-extra-panel"
-            >
-              {isExpanded ? '詳細を閉じる ▲' : '詳細を表示 ▼'}
-            </button>
-          </div>
-          <div className="toolbar-notify-wide">
-            <ToolbarNotifyRow {...notifyProps} />
+            <div className="toolbar-notify-wide">
+              <ToolbarNotifyRow {...notifyProps} />
+            </div>
           </div>
         </div>
       </div>
