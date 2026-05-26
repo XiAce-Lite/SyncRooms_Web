@@ -719,8 +719,8 @@
   }
 }
 
-/* 狭い画面: 通知・メタ情報は折りたたみ（トグルで展開） */
-@media (max-width: 768px) {
+/* 狭い画面 or 低い画面: 通知・メタ情報は折りたたみ（トグルで展開） */
+@media (max-width: 768px), (max-height: 480px) {
   .toolbar-notify-wide,
   .toolbar-meta-wide {
     display: none;
@@ -735,18 +735,20 @@
 
   .toolbar-refresh {
     align-items: flex-start;
+    flex: 0 1 auto;
   }
 
   .toolbar:not(.is-toolbar-expanded) .toolbar-narrow-collapsible {
     display: none;
   }
 
-  .toolbar-refresh {
-    flex: 0 1 auto;
+  .toolbar {
+    padding: 12px 14px 10px;
+    margin-bottom: 12px;
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px) and (min-height: 481px) {
   .toolbar-expand-toggle,
   .toolbar-extra-panel {
     display: none;
