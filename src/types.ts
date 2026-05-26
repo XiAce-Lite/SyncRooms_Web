@@ -120,3 +120,5 @@ export interface PresenceSnapshot {
   prevOfficialByRoomId: Map<string, boolean>;
   notifiedEnter: Set<string>;
 }
+
+export type ThemeMode = 'system' | 'light' | 'dark';

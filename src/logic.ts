@@ -9,6 +9,7 @@ import type {
   RoomFilters,
   RoomPresenceEvent,
   SortMode,
+  ThemeMode,
 } from './types';
 
 export const SYNCROOM_GUEST_API =
@@ -18,6 +19,7 @@ export const OFFICIAL_TEST_ROOM_NAME = 'Official Test Room';
 export const FAVORITES_STORAGE_KEY = 'syncrooms-web:favorites';
 export const FILTERS_STORAGE_KEY = 'syncrooms-web:filters';
 export const REFRESH_INTERVAL_STORAGE_KEY = 'syncrooms-web:refresh-interval';
+export const THEME_STORAGE_KEY = 'syncrooms-web:theme';
 
 export const DEFAULT_FAVORITES: FavoriteSetting[] = [];
 
@@ -31,6 +33,13 @@ export const DEFAULT_FILTERS: RoomFilters = {
 
 export const DEFAULT_SORT_MODE: SortMode = 'FAVORITE_ALERT_FIRST';
 export const DEFAULT_REFRESH_INTERVAL: RefreshIntervalOption = 3;
+export const DEFAULT_THEME: ThemeMode = 'system';
+
+export const THEME_OPTIONS: Array<{ value: ThemeMode; label: string }> = [
+  { value: 'system', label: 'システム' },
+  { value: 'light', label: 'ライト' },
+  { value: 'dark', label: 'ダーク' },
+];
 
 export const REFRESH_INTERVAL_OPTIONS: Array<{
   value: RefreshIntervalOption;
@@ -330,6 +339,44 @@ export function saveRefreshIntervalSetting(
     REFRESH_INTERVAL_STORAGE_KEY,
     JSON.stringify(refreshInterval),
   );
+}
+
+export function applyThemeMode(theme: ThemeMode) {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+export function loadThemeSetting(): ThemeMode {
+  if (typeof window === 'undefined') {
+    return DEFAULT_THEME;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (raw === 'light' || raw === 'dark' || raw === 'system') {
+      return raw;
+    }
+
+    const parsed = JSON.parse(raw ?? 'null') as unknown;
+    if (parsed === 'light' || parsed === 'dark' || parsed === 'system') {
+      return parsed;
+    }
+  } catch {
+    return DEFAULT_THEME;
+  }
+
+  return DEFAULT_THEME;
+}
+
+export function saveThemeSetting(theme: ThemeMode) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
 }
 
 export function getFavoriteUserIds(favorites: FavoriteSetting[]) {

@@ -4,6 +4,7 @@ import './App.css';
 import { RoomList } from './components/RoomList';
 import { Toolbar } from './components/Toolbar';
 import { useNotifications } from './hooks/useNotifications';
+import { useTheme } from './hooks/useTheme';
 import {
   buildJoinLink,
   DEFAULT_SORT_MODE,
@@ -30,6 +31,7 @@ import type {
 } from './types';
 
 function App() {
+  const { theme, setTheme } = useTheme();
   const [rooms, setRooms] = useState<GuestRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -256,6 +258,8 @@ function App() {
         totalCount={rooms.length}
         favoriteCount={favorites.length}
         lastUpdatedLabel={lastUpdatedLabel}
+        theme={theme}
+        onThemeChange={setTheme}
       />
 
       {error && rooms.length > 0 && <div className="inline-error">{error}</div>}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { REFRESH_INTERVAL_OPTIONS } from '../logic';
-import type { RefreshIntervalOption, RoomFilters } from '../types';
+import { REFRESH_INTERVAL_OPTIONS, THEME_OPTIONS } from '../logic';
+import type { RefreshIntervalOption, RoomFilters, ThemeMode } from '../types';
 
 interface ToolbarProps {
   title: string;
@@ -21,6 +21,8 @@ interface ToolbarProps {
   totalCount: number;
   favoriteCount: number;
   lastUpdatedLabel: string;
+  theme: ThemeMode;
+  onThemeChange: (value: ThemeMode) => void;
 }
 
 interface NotifyRowProps {
@@ -111,6 +113,8 @@ export function Toolbar({
   totalCount,
   favoriteCount,
   lastUpdatedLabel,
+  theme,
+  onThemeChange,
 }: ToolbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -145,6 +149,24 @@ export function Toolbar({
       <div className="toolbar-grid">
         <div className="toolbar-title-block">
           <h1 className="toolbar-title">{title}</h1>
+          <div className="toolbar-title-actions">
+            <label className="field-label" htmlFor="themeMode">
+              表示テーマ
+            </label>
+            <select
+              id="themeMode"
+              className="toolbar-theme-select"
+              value={theme}
+              onChange={(event) => onThemeChange(event.target.value as ThemeMode)}
+              aria-label="表示テーマ"
+            >
+              {THEME_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="toolbar-section toolbar-filters">
