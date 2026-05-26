@@ -1,19 +1,18 @@
 .app-shell {
   max-width: 1840px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 20px 20px;
 }
 
 .toolbar {
   position: sticky;
   top: 0;
-  z-index: 40;
-  margin-top: 0;
-  padding: 14px;
+  z-index: 100;
+  margin-bottom: 18px;
+  padding: 20px 14px 14px;
   border-radius: 18px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(10px);
+  background: #fff;
   box-shadow: 0 8px 24px rgba(27, 31, 51, 0.08);
 }
 
@@ -72,9 +71,47 @@
   gap: 8px;
 }
 
-.toolbar-refresh-row,
+.toolbar-refresh-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.toolbar-refresh-controls .toolbar-refresh-row {
+  width: auto;
+  flex: 1 1 auto;
+}
+
 .toolbar-notify-row {
   width: 100%;
+}
+
+.toolbar-expand-toggle {
+  display: none;
+  align-self: center;
+  flex: 0 0 auto;
+  min-height: 34px;
+  white-space: nowrap;
+}
+
+.toolbar-extra-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.toolbar-extra-panel .toolbar-meta {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.toolbar-notify-wide,
+.toolbar-meta-wide {
+  display: block;
 }
 
 .field-label {
@@ -182,7 +219,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 @media (min-width: 900px) {
@@ -267,10 +304,10 @@
 .room-card-heading {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 4px;
   min-width: 0;
-  flex: 1 1 220px;
-  min-height: 62px;
+  flex: 1 1 auto;
   padding: 7px 9px;
   border-radius: 12px;
   background: rgba(76, 111, 255, 0.06);
@@ -359,9 +396,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
   min-width: 0;
-  min-height: 24px;
+}
+
+.room-status-row:not(:has(.room-badge, .room-stat-chip)) {
+  display: none;
 }
 
 .room-card.is-locked .room-status-row {
@@ -680,13 +719,45 @@
   }
 }
 
-@media (max-width: 640px) {
-  .app-shell {
-    padding: 12px;
+/* 狭い画面: 通知・メタ情報は折りたたみ（トグルで展開） */
+@media (max-width: 768px) {
+  .toolbar-notify-wide,
+  .toolbar-meta-wide {
+    display: none;
   }
 
-  .app-title-row,
-  .room-card-top,
+  .toolbar-expand-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+  }
+
+  .toolbar-refresh {
+    align-items: flex-start;
+  }
+
+  .toolbar:not(.is-toolbar-expanded) .toolbar-narrow-collapsible {
+    display: none;
+  }
+
+  .toolbar-refresh {
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .toolbar-expand-toggle,
+  .toolbar-extra-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 0 12px 12px;
+  }
+
   .member-chip {
     flex-direction: column;
     align-items: stretch;
