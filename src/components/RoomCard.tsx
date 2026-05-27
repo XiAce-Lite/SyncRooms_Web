@@ -80,7 +80,7 @@ export function RoomCard({
                   <span className="room-lock-icon">🔒</span>
                 </span>
               )}
-              <h2 className="room-card-title">{room.name}</h2>
+              <h2 className="room-card-title" title={room.name}>{room.name}</h2>
             </div>
 
             <div className="room-card-actions room-card-actions-inline">
