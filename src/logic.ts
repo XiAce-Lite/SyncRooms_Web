@@ -8,6 +8,8 @@ import type {
   RoomFavoriteStats,
   RoomFilters,
   RoomPresenceEvent,
+  ListColumnWidthsSetting,
+  RoomViewMode,
   SortMode,
   ThemeMode,
 } from './types';
@@ -20,6 +22,8 @@ export const FAVORITES_STORAGE_KEY = 'syncrooms-web:favorites';
 export const FILTERS_STORAGE_KEY = 'syncrooms-web:filters';
 export const REFRESH_INTERVAL_STORAGE_KEY = 'syncrooms-web:refresh-interval';
 export const THEME_STORAGE_KEY = 'syncrooms-web:theme';
+export const VIEW_MODE_STORAGE_KEY = 'syncrooms-web:view-mode';
+export const LIST_COLUMN_WIDTHS_STORAGE_KEY = 'syncrooms-web:list-column-widths';
 
 export const DEFAULT_FAVORITES: FavoriteSetting[] = [];
 
@@ -34,11 +38,27 @@ export const DEFAULT_FILTERS: RoomFilters = {
 export const DEFAULT_SORT_MODE: SortMode = 'FAVORITE_ALERT_FIRST';
 export const DEFAULT_REFRESH_INTERVAL: RefreshIntervalOption = 3;
 export const DEFAULT_THEME: ThemeMode = 'system';
+export const DEFAULT_VIEW_MODE: RoomViewMode = 'card';
+
+export const LIST_COL_MIN_WIDTH = 160;
+export const LIST_COL_AUTO_MAX_WIDTH = 8000;
+
+export const DEFAULT_LIST_COLUMN_WIDTHS: ListColumnWidthsSetting = {
+  name: 260,
+  members: 220,
+  description: 240,
+  membersShowFullNames: false,
+};
 
 export const THEME_OPTIONS: Array<{ value: ThemeMode; label: string }> = [
   { value: 'system', label: 'システム' },
   { value: 'light', label: 'ライト' },
   { value: 'dark', label: 'ダーク' },
+];
+
+export const VIEW_MODE_OPTIONS: Array<{ value: RoomViewMode; label: string }> = [
+  { value: 'card', label: 'カード' },
+  { value: 'list', label: '一覧' },
 ];
 
 export const REFRESH_INTERVAL_OPTIONS: Array<{
@@ -377,6 +397,98 @@ export function saveThemeSetting(theme: ThemeMode) {
   }
 
   window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+}
+
+export function loadViewModeSetting(): RoomViewMode {
+  if (typeof window === 'undefined') {
+    return DEFAULT_VIEW_MODE;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    if (raw === 'card' || raw === 'list') {
+      return raw;
+    }
+
+    const parsed = JSON.parse(raw ?? 'null') as unknown;
+    if (parsed === 'card' || parsed === 'list') {
+      return parsed;
+    }
+  } catch {
+    return DEFAULT_VIEW_MODE;
+  }
+
+  return DEFAULT_VIEW_MODE;
+}
+
+export function saveViewModeSetting(viewMode: RoomViewMode) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+}
+
+function normalizeListColumnWidth(value: unknown, fallback: number) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return fallback;
+  }
+
+  return Math.max(
+    LIST_COL_MIN_WIDTH,
+    Math.min(LIST_COL_AUTO_MAX_WIDTH, Math.round(value)),
+  );
+}
+
+export function loadListColumnWidthsSetting(): ListColumnWidthsSetting {
+  if (typeof window === 'undefined') {
+    return DEFAULT_LIST_COLUMN_WIDTHS;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(LIST_COLUMN_WIDTHS_STORAGE_KEY);
+    if (!raw) {
+      return DEFAULT_LIST_COLUMN_WIDTHS;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<ListColumnWidthsSetting>;
+    return {
+      name: normalizeListColumnWidth(parsed.name, DEFAULT_LIST_COLUMN_WIDTHS.name),
+      members: normalizeListColumnWidth(
+        parsed.members,
+        DEFAULT_LIST_COLUMN_WIDTHS.members,
+      ),
+      description: normalizeListColumnWidth(
+        parsed.description,
+        DEFAULT_LIST_COLUMN_WIDTHS.description,
+      ),
+      membersShowFullNames: parsed.membersShowFullNames === true,
+    };
+  } catch {
+    return DEFAULT_LIST_COLUMN_WIDTHS;
+  }
+}
+
+export function saveListColumnWidthsSetting(setting: ListColumnWidthsSetting) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(
+    LIST_COLUMN_WIDTHS_STORAGE_KEY,
+    JSON.stringify({
+      name: normalizeListColumnWidth(setting.name, DEFAULT_LIST_COLUMN_WIDTHS.name),
+      members: normalizeListColumnWidth(
+        setting.members,
+        DEFAULT_LIST_COLUMN_WIDTHS.members,
+      ),
+      description: normalizeListColumnWidth(
+        setting.description,
+        DEFAULT_LIST_COLUMN_WIDTHS.description,
+      ),
+      membersShowFullNames: setting.membersShowFullNames === true,
+    }),
+  );
 }
 
 export function getFavoriteUserIds(favorites: FavoriteSetting[]) {

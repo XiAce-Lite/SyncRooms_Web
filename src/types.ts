@@ -122,3 +122,12 @@ export interface PresenceSnapshot {
 }
 
 export type ThemeMode = 'system' | 'light' | 'dark';
+
+export type RoomViewMode = 'card' | 'list';
+
+export interface ListColumnWidthsSetting {
+  name: number;
+  members: number;
+  description: number;
+  membersShowFullNames: boolean;
+}

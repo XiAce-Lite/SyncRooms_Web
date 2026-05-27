@@ -16,9 +16,11 @@ import {
   loadFavoriteSettings,
   loadFilterSettings,
   loadRefreshIntervalSetting,
+  loadViewModeSetting,
   saveFavoriteSettings,
   saveFilterSettings,
   saveRefreshIntervalSetting,
+  saveViewModeSetting,
   sortRooms,
   SYNCROOM_GUEST_API,
 } from './logic';
@@ -28,6 +30,7 @@ import type {
   GuestRoomsResponse,
   RefreshIntervalOption,
   RoomFilters,
+  RoomViewMode,
 } from './types';
 
 function App() {
@@ -40,6 +43,7 @@ function App() {
   const [filters, setFilters] = useState<RoomFilters>(() => loadFilterSettings());
   const [refreshInterval, setRefreshInterval] =
     useState<RefreshIntervalOption>(() => loadRefreshIntervalSetting());
+  const [viewMode, setViewMode] = useState<RoomViewMode>(() => loadViewModeSetting());
   const [favorites, setFavorites] = useState<FavoriteSetting[]>(() =>
     loadFavoriteSettings(),
   );
@@ -93,6 +97,10 @@ function App() {
   useEffect(() => {
     saveRefreshIntervalSetting(refreshInterval);
   }, [refreshInterval]);
+
+  useEffect(() => {
+    saveViewModeSetting(viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     if (!highlightedRoomId) {
@@ -260,6 +268,8 @@ function App() {
         lastUpdatedLabel={lastUpdatedLabel}
         theme={theme}
         onThemeChange={setTheme}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       {error && rooms.length > 0 && <div className="inline-error">{error}</div>}
@@ -268,6 +278,7 @@ function App() {
         rooms={visibleRooms}
         loading={loading}
         error={error}
+        viewMode={viewMode}
         highlightedRoomId={highlightedRoomId}
         favoriteUserIds={favoriteUserIds}
         alertUserIds={alertUserIds}

@@ -32,6 +32,49 @@ function renderDescriptionText(text: string) {
   });
 }
 
+function sortRoomMembersForDisplay(
+  members: GuestRoom['members'],
+  ownerUserId: string,
+  favoriteUserIds: Set<string>,
+  alertUserIds: Set<string>,
+) {
+  const owners: typeof members = [];
+  const notifyFav: typeof members = [];
+  const favOnly: typeof members = [];
+  const others: typeof members = [];
+
+  for (const member of members) {
+    const isOwner = member.userId === ownerUserId;
+    const isFavorite = favoriteUserIds.has(member.userId);
+    const isAlertOn = alertUserIds.has(member.userId);
+
+    if (isOwner) {
+      owners.push(member);
+    } else if (isFavorite && isAlertOn) {
+      notifyFav.push(member);
+    } else if (isFavorite) {
+      favOnly.push(member);
+    } else {
+      others.push(member);
+    }
+  }
+
+  const compareByNickname = (a: (typeof members)[number], b: (typeof members)[number]) => {
+    const an = a.nickname?.trim() ?? '';
+    const bn = b.nickname?.trim() ?? '';
+    const nickCmp = an.localeCompare(bn, 'ja', { sensitivity: 'base' });
+    if (nickCmp !== 0) {
+      return nickCmp;
+    }
+    return a.userId.localeCompare(b.userId);
+  };
+
+  notifyFav.sort(compareByNickname);
+  favOnly.sort(compareByNickname);
+
+  return [...owners, ...notifyFav, ...favOnly, ...others];
+}
+
 interface RoomCardProps {
   room: GuestRoom;
   favoriteStats: RoomFavoriteStats;
@@ -56,6 +99,12 @@ export function RoomCard({
   const badges = [isOfficialTestRoom(room) ? 'TEST' : null].filter(Boolean) as string[];
   const favoriteSet = favoriteUserIds ?? new Set<string>();
   const alertSet = alertUserIds ?? new Set<string>();
+  const sortedMembers = sortRoomMembersForDisplay(
+    room.members,
+    room.ownerUser.userId,
+    favoriteSet,
+    alertSet,
+  );
 
   const roomTags = [...(room.tags ?? []), ...(room.customTags ?? [])].map((tag) => ({
     raw: tag,
@@ -153,7 +202,7 @@ export function RoomCard({
       )}
 
       <div className="member-grid">
-        {room.members.map((member, index) => {
+        {sortedMembers.map((member, index) => {
           const isFavorite = favoriteSet.has(member.userId);
           const isAlertOn = alertSet.has(member.userId);
           const isOwner = member.userId === room.ownerUser.userId;

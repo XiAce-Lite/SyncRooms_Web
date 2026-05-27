@@ -1,6 +1,11 @@
 import { useState } from 'react';
-import { REFRESH_INTERVAL_OPTIONS, THEME_OPTIONS } from '../logic';
-import type { RefreshIntervalOption, RoomFilters, ThemeMode } from '../types';
+import { REFRESH_INTERVAL_OPTIONS, THEME_OPTIONS, VIEW_MODE_OPTIONS } from '../logic';
+import type {
+  RefreshIntervalOption,
+  RoomFilters,
+  RoomViewMode,
+  ThemeMode,
+} from '../types';
 
 interface ToolbarProps {
   title: string;
@@ -23,6 +28,8 @@ interface ToolbarProps {
   lastUpdatedLabel: string;
   theme: ThemeMode;
   onThemeChange: (value: ThemeMode) => void;
+  viewMode: RoomViewMode;
+  onViewModeChange: (value: RoomViewMode) => void;
 }
 
 interface NotifyRowProps {
@@ -115,6 +122,8 @@ export function Toolbar({
   lastUpdatedLabel,
   theme,
   onThemeChange,
+  viewMode,
+  onViewModeChange,
 }: ToolbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -150,6 +159,22 @@ export function Toolbar({
         <div className="toolbar-title-block">
           <h1 className="toolbar-title">{title}</h1>
           <div className="toolbar-title-actions">
+            <label className="field-label" htmlFor="viewMode">
+              表示形式
+            </label>
+            <select
+              id="viewMode"
+              className="toolbar-viewmode-select"
+              value={viewMode}
+              onChange={(event) => onViewModeChange(event.target.value as RoomViewMode)}
+              aria-label="表示形式"
+            >
+              {VIEW_MODE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <label className="field-label" htmlFor="themeMode">
               表示テーマ
             </label>
